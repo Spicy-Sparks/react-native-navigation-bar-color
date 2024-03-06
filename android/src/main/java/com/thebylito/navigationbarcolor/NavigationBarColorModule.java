@@ -10,6 +10,8 @@ import android.os.Build;
 import android.app.Activity;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import androidx.annotation.UiThread;
 import com.facebook.react.bridge.Arguments;
@@ -142,8 +144,15 @@ public class NavigationBarColorModule extends ReactContextBaseJavaModule {
                 @Override
                 public void run() {
                     if (getCurrentActivity() != null) {
-                        View decorView = getCurrentActivity().getWindow().getDecorView();
-                        decorView.setSystemUiVisibility(UI_FLAG_HIDE_NAV_BAR);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            final WindowInsetsController controller = getCurrentActivity().getWindow().getInsetsController();
+                            if (controller != null){
+                                controller.hide(WindowInsets.Type.navigationBars());
+                            }
+                        } else{
+                            getCurrentActivity().getWindow().getDecorView().setSystemUiVisibility(UI_FLAG_HIDE_NAV_BAR);
+                            getCurrentActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                        }
                     }
                 }
             });
@@ -164,6 +173,17 @@ public class NavigationBarColorModule extends ReactContextBaseJavaModule {
                         View decorView = getCurrentActivity().getWindow().getDecorView();
                         int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
                         decorView.setSystemUiVisibility(uiOptions);
+                    }
+                    if (getCurrentActivity() != null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            final WindowInsetsController controller = getCurrentActivity().getWindow().getInsetsController();
+                            if (controller != null){
+                                controller.show(WindowInsets.Type.navigationBars());
+                            }
+                        } else {
+                            getCurrentActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                            getCurrentActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                        }
                     }
                 }
             });
